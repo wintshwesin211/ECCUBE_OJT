@@ -646,6 +646,7 @@ admin.product.product_code__short: SKU
 admin.product.product_name_and_code: Product Name / SKU
 admin.product.sale_limit: Max Order Qty
 admin.product.delivery_duration: Estimated Shipping Date
+admin.product.delivery_date: Delivery Date
 admin.product.delivery_fee: Shipping Charge
 admin.product.tax_rate: Tax
 admin.product.free_area: Miscellaneous
