@@ -1,0 +1,335 @@
+{#
+This file is part of EC-CUBE
+
+Copyright(c) EC-CUBE CO.,LTD. All Rights Reserved.
+
+http://www.ec-cube.co.jp/
+
+For the full copyright and license information, please view the LICENSE
+file that was distributed with this source code.
+#}
+{% extends 'default_frame.twig' %}
+
+{% set mypageno = 'index' %}
+
+{% set body_class = 'mypage' %}
+
+{% block stylesheet %}
+	<style>
+		.clearfix::after {
+			content: "";
+			display: block;
+			height: 0;
+			clear: both;
+			visibility: hidden;
+			font-size: 0;
+		}
+
+		.ft-left {
+			float: left;
+		}
+
+		.ft-right {
+			float: right;
+		}
+
+		.ec-receiptHeader {
+			text-align: center;
+			padding: 20px;
+		}
+
+		.ec-receiptHeader button {
+			border: none;
+			background-color: #525263;
+			color: #FFFFFF;
+			width: 18%;
+			margin: 0 auto;
+			padding: 10px;
+			border-radius: 10px;
+			font-size: 16px;
+		}
+
+		.ec-receipt-frtRightTxt {
+			text-align: right;
+		}
+
+		.ec-receiptpurchase h2,
+		.ec-deliveryinfo h2,
+		.ec-paymentinfo h2 {
+			text-align: center;
+			border-bottom: 2px solid;
+			padding: 10px;
+			font-size: 19px;
+		}
+
+		.ec-receiptpurchase .ft-left,
+		.ec-receiptpurchase .ft-right {
+			width: 50%;
+		}
+
+		.ec-receiptpurchase .ft-left {
+			padding-right: 50px;
+		}
+
+		.ec-receiptpurchase .ft-right {
+			text-align: left;
+		}
+
+		.ec-shippingname {
+			font-size: 20px;
+			border-bottom: 2px solid;
+			display: inline-block;
+			padding: 10px;
+		}
+
+		.ec-imageGrid {
+			border-bottom: 2px dotted;
+			border-top: none;
+			width: 100%;
+			padding: 12px 0;
+		}
+
+		.ec-receipt-subtotal {
+			display: inline-block;
+		}
+
+		.ec-receipt-price p {
+			display: inline-block;
+			margin-right: 25px;
+		}
+
+		.ec-totalBox__paymentTotal {
+			padding: 10px 0;
+			font-size: 16px;
+		}
+
+		.ec-deliveryinfo {
+			margin-top: 20px;
+		}
+
+		.ec-deliveryinfo .ft-left,
+		.ec-deliveryinfo .ft-right {
+			width: 50%;
+		}
+
+		.ec-delivery-detail {
+			border-bottom: 2px dotted;
+			padding: 20px 0;
+		}
+
+		.ec-delivery-detail .ec-imageGrid {
+			border: none;
+		}
+
+		.ec-paymentinfo p {
+			padding: 20px 0;
+		}
+
+		.ec-receiptBtn {
+			margin-top: 16px;
+		}
+	</style>
+{% endblock %}
+
+{% block main %}
+	<div class="ec-receiptHeader">
+		<button onclick="window.print()">
+			{{ 'front.mypage.receipt_print'|trans }}
+		</button>
+	</div>
+	<div class="ec-receiptFrtBl clearfix">
+		<div>
+			{% for Shipping in Order.Shippings %}
+				<h2 class="ec-shippingname">{{ Shipping.name01 }}&nbsp;{{ Shipping.name02 }}</h2>
+			{% endfor %}
+		</div>
+		<div class="ft-left">
+			<div class="ec-definitions">
+				<dt>{{ 'front.mypage.order_date'|trans }}
+					:
+				</dt>
+				<dd>{{ Order.create_date|date_sec }}</dd>
+			</div>
+			<div class="ec-definitions">
+				<dt>{{ 'front.mypage.order_no'|trans }}
+					:
+				</dt>
+				<dd>{{ Order.order_no }}</dd>
+			</div>
+			{% if BaseInfo.option_mypage_order_status_display %}
+				<div class="ec-definitions">
+					<dt>{{ 'front.mypage.order_status'|trans }}
+						:
+					</dt>
+					<dd>{{ Order.CustomerOrderStatus }}</dd>
+				</div>
+			{% endif %}
+		</div>
+		<div class="ft-right ec-receipt-frtRightTxt">
+			<div class="ec-definitions">
+				<dt>{{ 'front.mypage.receipt_issue_date'|trans }}
+					:
+				</dt>
+				<dd>{{ Order.create_date|date_sec }}</dd>
+			</div>
+			<div class="ec-definitions">
+				<dt>
+					{{ BaseInfo.shop_name }}
+				</dt>
+			</div>
+			<div class="ec-definitions">
+				<dt>
+					TEL
+				</dt>
+			</div>
+		</div>
+	</div>
+	<div class="ec-receiptpurchase clearfix">
+		<h2>{{ 'front.mypage.receipt_purchased_product'|trans }}</h2>
+		<div class="ft-left">
+			<div class="ec-orderDelivery">
+				{% for Shipping in Order.Shippings %}
+					{% for orderItem in Shipping.productOrderItems %}
+						<div class="ec-orderDelivery__item">
+							<div class="ec-imageGrid">
+								<div class="ec-imageGrid__content">
+									<p>
+										{% if orderItem.Product is not null and orderItem.Product.Status.id == constant('Eccube\\Entity\\Master\\ProductStatus::DISPLAY_SHOW') %}
+											<a href="{{ url('product_detail', {'id': orderItem.Product.id}) }}">{{ orderItem.productName }}</a>
+										{% else %}
+											{{ orderItem.productName }}
+										{% endif %}
+										×{{ orderItem.quantity }}
+										{% if is_reduced_tax_rate(orderItem) %}
+											{{ 'common.reduced_tax_rate_symbol'|trans }}{% set isShowReducedTaxMess = true %}
+										{% endif %}
+									</p>
+									{% if orderItem.ProductClass is not null %}
+										{% if orderItem.ProductClass.ClassCategory1 is not null %}
+											{{ orderItem.productClass.classCategory1.className.name }}：{{ orderItem.productClass.classCategory1 }}
+										{% endif %}
+										{% if orderItem.ProductClass.ClassCategory2 %}
+											<br>{{ orderItem.productClass.classCategory2.className.name }}：{{ orderItem.productClass.classCategory2 }}
+										{% endif %}
+									{% endif %}
+									<div class="ec-receipt-price">
+										<p>{{ orderItem.price_inc_tax|price }}
+											×
+											{{ orderItem.quantity|number_format }}</p>
+
+										{% if orderItem.product and orderItem.price_inc_tax != orderItem.productClass.price02IncTax %}
+											<p class="ec-color-accent">
+												{{ 'front.mypage.current_price'|trans }}{{ orderItem.productClass.price02IncTax|price }}</p>
+											{% set remessage = true %}
+										{% endif %}
+										<p class="ec-receipt-subtotal">{{ 'common.subtotal'|trans }}{{ (orderItem.price_inc_tax * orderItem.quantity)|price }}</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					{% endfor %}
+				{% endfor %}
+			</div>
+		</div>
+		<div class="ft-right">
+			<div>
+				<dl class="ec-definitions">
+					<dt>{{ 'common.subtotal'|trans }}
+						:
+					</dt>
+					<dd>{{ Order.subtotal|price }}</dd>
+				</dl>
+				<dl class="ec-definitions">
+					<dt>{{ 'common.charge'|trans }}
+						:
+					</dt>
+					<dd>{{ Order.charge|price }}</dd>
+				</dl>
+				<dl class="ec-definitions">
+					<dt>{{ 'common.delivery_fee'|trans }}
+						:
+					</dt>
+					<dd>{{ Order.delivery_fee_total|price }}</dd>
+				</dl>
+			</div>
+
+			<div class="ec-totalBox__paymentTotal">{{ 'common.total'|trans }}
+				<span class="ec-totalBox__price">{{ Order.payment_total|price }}</span>
+				<span class="ec-totalBox__taxLabel">{{ 'common.tax_include'|trans }}</span>
+			</div>
+		</div>
+	</div>
+	<div class="ec-deliveryinfo">
+		<h2>{{ 'front.mypage.delivery_info'|trans }}</h2>
+		{% for Shipping in Order.Shippings %}
+			{% for orderItem in Shipping.productOrderItems %}
+				<div class="ec-delivery-detail clearfix">
+					<div class="ft-left">
+						{% set isShowReducedTaxMess = false %}
+						<div class="ec-orderDelivery__title">{{ 'front.mypage.delivery'|trans }}
+							{% if Order.multiple %}({{ loop.index }})
+							{% endif %}
+						</div>
+
+						<p>{{ isShowReducedTaxMess ? 'common.reduced_tax_rate_messeage'|trans }}</p>
+						<div class="ec-orderDelivery__address">
+							<p>{{ Shipping.name01 }}&nbsp;{{ Shipping.name02 }}&nbsp;
+																                                ({{ Shipping.kana01 }}&nbsp;{{ Shipping.kana02 }})</p>
+							<p>{{ 'common.postal_symbol'|trans }}{{ Shipping.postal_code }}
+								{{ Shipping.Pref }}{{ Shipping.addr01 }}{{ Shipping.addr02 }}</p>
+							<p>{{ Shipping.phone_number }}</p>
+						</div>
+						<div class="ec-definitions--soft">
+							<dt>{{ 'front.mypage.delivery_provider'|trans }}
+								:</dt>
+							<dd>{{ Shipping.shipping_delivery_name }}</dd>
+						</div>
+						<div class="ec-definitions--soft">
+							<dt>{{ 'front.mypage.delivery_date'|trans }}
+								:</dt>
+							<dd>{{ Shipping.shipping_delivery_date|date_day_with_weekday|default('common.select__unspecified'|trans) }}</dd>
+						</div>
+						<div class="ec-definitions--soft">
+							<dt>{{ 'front.mypage.delivery_time'|trans }}
+								:</dt>
+							<dd>{{ Shipping.shipping_delivery_time|default('common.select__unspecified'|trans) }}</dd>
+						</div>
+					</div>
+					<div class="ft-right">
+						<div class="ec-orderDelivery__item">
+							<div class="ec-imageGrid">
+								<div class="ec-imageGrid__content">
+									<p>
+										{% if orderItem.Product is not null and orderItem.Product.Status.id == constant('Eccube\\Entity\\Master\\ProductStatus::DISPLAY_SHOW') %}
+											<a href="{{ url('product_detail', {'id': orderItem.Product.id}) }}">{{ orderItem.productName }}</a>
+										{% else %}
+											{{ orderItem.productName }}
+										{% endif %}
+										×{{ orderItem.quantity }}
+										{% if is_reduced_tax_rate(orderItem) %}
+											{{ 'common.reduced_tax_rate_symbol'|trans }}{% set isShowReducedTaxMess = true %}
+										{% endif %}
+									</p>
+									{% if orderItem.ProductClass is not null %}
+										{% if orderItem.ProductClass.ClassCategory1 is not null %}
+											{{ orderItem.productClass.classCategory1.className.name }}：{{ orderItem.productClass.classCategory1 }}
+										{% endif %}
+										{% if orderItem.ProductClass.ClassCategory2 %}
+											<br>{{ orderItem.productClass.classCategory2.className.name }}：{{ orderItem.productClass.classCategory2 }}
+										{% endif %}
+									{% endif %}
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			{% endfor %}
+		{% endfor %}
+	</div>
+	<div class="ec-paymentinfo">
+		<h2>{{ 'front.mypage.payment_info'|trans }}</h2>
+		<p>{{ 'front.mypage.payment'|trans }}
+			:
+			{{ Order.PaymentMethod }}</p>
+	</div>
+{% endblock %}
