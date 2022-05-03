@@ -5,7 +5,7 @@ namespace Customize\Form\Extension\Admin;
 use Eccube\Form\Type\Admin\ProductType;
 use Symfony\Component\Form\AbstractTypeExtension;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 
 class ProductExtension extends AbstractTypeExtension
 {
@@ -15,13 +15,8 @@ class ProductExtension extends AbstractTypeExtension
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('delivery_date', DateType::class, [
-                'label' => 'admin.product.delivery_date',
+            ->add('delivery_date', IntegerType::class, [
                 'required' => false,
-                'input' => 'datetime',
-                'format' => 'yyyy-MM-dd',
-                'widget' => 'single_text',
-                'placeholder' => ['year' => '----', 'month' => '--', 'day' => '--'],
             ]);
     }
 
@@ -32,7 +27,7 @@ class ProductExtension extends AbstractTypeExtension
     {
         return ProductType::class;
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -41,3 +36,4 @@ class ProductExtension extends AbstractTypeExtension
         yield ProductType::class;
     }
 }
+

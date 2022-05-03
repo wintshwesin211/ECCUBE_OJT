@@ -13,7 +13,7 @@ trait ProductTrait
     /**
      * @var \DateTime|null
      * 
-     * @ORM\Column(name="delivery_date", type="datetimetz", nullable=true)
+     * @ORM\Column(name="delivery_date", type="integer", nullable=true)
      */
     public $delivery_date;
 }

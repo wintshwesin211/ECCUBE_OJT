@@ -247,6 +247,10 @@ front.mypage.delivery_date: お届け日
 front.mypage.delivery_time: お届け時間
 front.mypage.current_price: 【現在価格】
 front.mypage.reorder: 再注文する
+front.mypage.receipt: レシート
+front.mypage.receipt_print: このページを印刷
+front.mypage.receipt_issue_date: 【発行元】 発行日
+front.mypage.receipt_purchased_product: ご購入商品情報
 front.mypage.payment_info: お支払い情報
 front.mypage.payment: お支払い方法
 front.mypage.message: お問い合わせ
@@ -646,7 +650,6 @@ admin.product.product_code__short: コード
 admin.product.product_name_and_code: 商品名・商品コード
 admin.product.sale_limit: 販売制限数
 admin.product.delivery_duration: 発送日目安
-admin.product.delivery_date: 配送日
 admin.product.delivery_fee: 商品送料
 admin.product.tax_rate: 税率
 admin.product.free_area: フリーエリア
@@ -1611,6 +1614,7 @@ tooltip.product.shop_memo: 店舗用のメモ欄です。フロント画面に�
 tooltip.product.backend_name: 管理者用に別名を登録しておくことができます（例：規格名：サイズ　管理名：サイズ（服）、サイズ（靴）等 ）。フロント画面には表示されません。
 tooltip.product.csv_upload: 所定の型のCSVデータを用いて商品を一括で登録することができます。
 tooltip.product.csv_format: 雛形ファイルをダウンロードして編集すれば、簡単に所定の型のCSVデータを作成できます。
+tooltip.product.delivery_date: 発送日の目安期間を商品ごとに登録できます。
 tooltip.category.csv_upload: 所定の型のCSVデータを用いてカテゴリを一括で登録することができます。
 tooltip.category.csv_format: 雛形ファイルをダウンロードして編集すれば、簡単に所定の型のCSVデータを作成できます。
 tooltip.order.multi_search_label: 情報を入力して一覧の絞り込み検索ができます。より詳細な条件を指定するには［詳細検索］を開いてください。
