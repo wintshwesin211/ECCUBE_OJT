@@ -247,6 +247,10 @@ front.mypage.delivery_date: Delivery Date
 front.mypage.delivery_time: Delivery Time
 front.mypage.current_price: [Current Price]
 front.mypage.reorder: Reorder
+front.mypage.receipt: Receipt
+front.mypage.receipt_print: Print this page
+front.mypage.receipt_issue_date: [Publisher] Date of issue
+front.mypage.receipt_purchased_product: Purchased product information
 front.mypage.payment_info: Payment Info
 front.mypage.payment: Payment Method
 front.mypage.message: Contact Us
@@ -646,6 +650,7 @@ admin.product.product_code__short: SKU
 admin.product.product_name_and_code: Product Name / SKU
 admin.product.sale_limit: Max Order Qty
 admin.product.delivery_duration: Estimated Shipping Date
+admin.product.delivery_date: Delivery Date
 admin.product.delivery_fee: Shipping Charge
 admin.product.tax_rate: Tax
 admin.product.free_area: Miscellaneous
@@ -1610,6 +1615,7 @@ tooltip.product.shop_memo: Notes for store use. This will not be displayed on th
 tooltip.product.backend_name: 'You can register an alias for administrator (e.g. Option Name: Size - Alias: Size (Clothing) or Size (Shoes) etc. It will not be displayed on the storefront.'
 tooltip.product.csv_upload: Bulk product registration is available with a CSV template.
 tooltip.product.csv_format: You can create a CSV data easily with templates available for downloads.
+tooltip.product.delivery_date: You can register estimated shipping date per product.
 tooltip.category.csv_upload: Bulk category registration is available with a CSV template.
 tooltip.category.csv_format: You can create a CSV data easily with templates available for downloads.
 tooltip.order.multi_search_label: You can filter the list with keywords. For detailed search options, please go to [Advanced Search].
