@@ -120,7 +120,7 @@ file that was distributed with this source code.
 						<p>{{ isShowReducedTaxMess ? 'common.reduced_tax_rate_messeage'|trans }}</p>
 						<div class="ec-orderDelivery__address">
 							<p>{{ Shipping.name01 }}&nbsp;{{ Shipping.name02 }}&nbsp;
-								                                ({{ Shipping.kana01 }}&nbsp;{{ Shipping.kana02 }})</p>
+																                                ({{ Shipping.kana01 }}&nbsp;{{ Shipping.kana02 }})</p>
 							<p>{{ 'common.postal_symbol'|trans }}{{ Shipping.postal_code }}
 								{{ Shipping.Pref }}{{ Shipping.addr01 }}{{ Shipping.addr02 }}</p>
 							<p>{{ Shipping.phone_number }}</p>
@@ -220,13 +220,11 @@ file that was distributed with this source code.
 					{% if stockOrder %}
 						<a href="{{ url('mypage_order', {'order_no': Order.order_no }) }}" class="ec-blockBtn--action load-overlay" {{ csrf_token_for_anchor() }} data-method="put" data-confirm="false">{{ 'front.mypage.reorder'|trans }}</a>
 					{% endif %}
-					<form action="{{ url('receipt', {'order_no': Order.order_no }) }}" method="get">
-						<div class="ec-blockBtn--cancel ec-receiptBtn">
-							<button type="submit" id="favorite" class="ec-blockBtn--cancel">
-								{{ 'front.mypage.receipt'|trans }}
-							</button>
-						</div>
-					</form>
+					<a href="{{ url('receipt', {'order_no': Order.order_no }) }}" class="ec-blockBtn--cancel ec-receiptBtn" data-method="get">
+						<i class="fa fa-cloud-download mr-1 text-secondary"></i>
+						<span>{{ 'front.mypage.receipt'|trans }}</span>
+					</a>
+					<a href="{{ url('mypage_order_export', {'order_no': Order.order_no }) }}" class="ec-blockBtn--action ec-receiptBtn" data-method="get">{{ 'admin.common.csv_download'|trans }}</a>
 				</div>
 				{% if remessage %}
 					<p class="ec-color-accent">
