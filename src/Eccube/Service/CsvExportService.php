@@ -363,7 +363,9 @@ class CsvExportService
 
         return function ($value) use ($config) {
             return mb_convert_encoding(
-                (string) $value, $config['eccube_csv_export_encoding'], 'UTF-8'
+                (string) $value,
+                $config['eccube_csv_export_encoding'],
+                'UTF-8'
             );
         };
     }
@@ -463,6 +465,20 @@ class CsvExportService
         // 商品データのクエリビルダを構築.
         $qb = $this->productRepository
             ->getQueryBuilderBySearchDataForAdmin($searchData);
+
+        return $qb;
+    }
+
+    /**
+     * ユーザー注文のクエリビルダーを返します.
+     *
+     * @param Request $request
+     *
+     * @return \Doctrine\ORM\QueryBuilder
+     */
+    public function getUserOrder($order_no)
+    {
+        $qb = $this->orderRepository->getQueryBuilderByOrderID($order_no);
 
         return $qb;
     }

@@ -37,17 +37,7 @@ class OrderRepository extends AbstractRepository
     protected $queries;
 
     public const COLUMNS = [
-        'order' => 'o.name01'
-        ,'orderer'=> 'o.id'
-        ,'shipping_id'=> 's.id'
-        ,'purchase_product' => 'oi.product_name'
-        ,'quantity' => 'oi.quantity'
-        ,'payment_method' => 'o.payment_method'
-        ,'order_status' => 'o.OrderStatus'
-        ,'purchase_price' => 'o.total'
-        ,'shipping_status' => 's.shipping_date'
-        ,'tracking_number' => 's.tracking_number'
-        ,'delivery'  => 's.name01'
+        'order' => 'o.name01', 'orderer' => 'o.id', 'shipping_id' => 's.id', 'purchase_product' => 'oi.product_name', 'quantity' => 'oi.quantity', 'payment_method' => 'o.payment_method', 'order_status' => 'o.OrderStatus', 'purchase_price' => 'o.total', 'shipping_status' => 's.shipping_date', 'tracking_number' => 's.tracking_number', 'delivery'  => 's.name01'
     ];
 
     /**
@@ -70,8 +60,7 @@ class OrderRepository extends AbstractRepository
     {
         $Order = $this
             ->find($orderId)
-            ->setOrderStatus($Status)
-        ;
+            ->setOrderStatus($Status);
 
         switch ($Status->getId()) {
             case '6': // 入金済へ
@@ -127,12 +116,12 @@ class OrderRepository extends AbstractRepository
                 $multi = null;
             }
             $qb
-                ->andWhere('o.id = :multi OR CONCAT(o.name01, o.name02) LIKE :likemulti OR '.
-                            'CONCAT(o.kana01, o.kana02) LIKE :likemulti OR o.company_name LIKE :company_name OR '.
-                            'o.order_no LIKE :likemulti OR o.email LIKE :likemulti OR o.phone_number LIKE :likemulti')
+                ->andWhere('o.id = :multi OR CONCAT(o.name01, o.name02) LIKE :likemulti OR ' .
+                    'CONCAT(o.kana01, o.kana02) LIKE :likemulti OR o.company_name LIKE :company_name OR ' .
+                    'o.order_no LIKE :likemulti OR o.email LIKE :likemulti OR o.phone_number LIKE :likemulti')
                 ->setParameter('multi', $multi)
-                ->setParameter('likemulti', '%'.$clean_key_multi.'%')
-                ->setParameter('company_name', '%'.$searchData['multi'].'%'); // 会社名はスペースを除去せず検索
+                ->setParameter('likemulti', '%' . $clean_key_multi . '%')
+                ->setParameter('company_name', '%' . $searchData['multi'] . '%'); // 会社名はスペースを除去せず検索
         }
 
         // order_id_end
@@ -161,7 +150,7 @@ class OrderRepository extends AbstractRepository
         if (isset($searchData['company_name']) && StringUtil::isNotBlank($searchData['company_name'])) {
             $qb
                 ->andWhere('o.company_name LIKE :company_name')
-                ->setParameter('company_name', '%'.$searchData['company_name'].'%');
+                ->setParameter('company_name', '%' . $searchData['company_name'] . '%');
         }
 
         // name
@@ -169,7 +158,7 @@ class OrderRepository extends AbstractRepository
             $clean_name = preg_replace('/\s+|[　]+/u', '', $searchData['name']);
             $qb
                 ->andWhere('CONCAT(o.name01, o.name02) LIKE :name')
-                ->setParameter('name', '%'.$clean_name.'%');
+                ->setParameter('name', '%' . $clean_name . '%');
         }
 
         // kana
@@ -177,14 +166,14 @@ class OrderRepository extends AbstractRepository
             $clean_kana = preg_replace('/\s+|[　]+/u', '', $searchData['kana']);
             $qb
                 ->andWhere('CONCAT(o.kana01, o.kana02) LIKE :kana')
-                ->setParameter('kana', '%'.$clean_kana.'%');
+                ->setParameter('kana', '%' . $clean_kana . '%');
         }
 
         // email
         if (isset($searchData['email']) && StringUtil::isNotBlank($searchData['email'])) {
             $qb
                 ->andWhere('o.email like :email')
-                ->setParameter('email', '%'.$searchData['email'].'%');
+                ->setParameter('email', '%' . $searchData['email'] . '%');
         }
 
         // tel
@@ -192,7 +181,7 @@ class OrderRepository extends AbstractRepository
             $tel = preg_replace('/[^0-9]/ ', '', $searchData['phone_number']);
             $qb
                 ->andWhere('o.phone_number LIKE :phone_number')
-                ->setParameter('phone_number', '%'.$tel.'%');
+                ->setParameter('phone_number', '%' . $tel . '%');
         }
 
         // sex
@@ -311,7 +300,7 @@ class OrderRepository extends AbstractRepository
         if (isset($searchData['buy_product_name']) && StringUtil::isNotBlank($searchData['buy_product_name'])) {
             $qb
                 ->andWhere('oi.product_name LIKE :buy_product_name')
-                ->setParameter('buy_product_name', '%'.$searchData['buy_product_name'].'%');
+                ->setParameter('buy_product_name', '%' . $searchData['buy_product_name'] . '%');
         }
 
         // 発送メール送信/未送信.
@@ -452,5 +441,33 @@ class OrderRepository extends AbstractRepository
         $Customer->setBuyTotal($result['buy_total']);
         $Customer->setFirstBuyDate($FirstOrder->getOrderDate());
         $Customer->setLastBuyDate($LastOrder->getOrderDate());
+    }
+
+    /**
+     * @param  $OrderID
+     *
+     * @return QueryBuilder
+     */
+    public function getQueryBuilderByOrderID($OrderID)
+    {
+        $qb = $this->createQueryBuilder('o')
+            ->select('o, s')
+            ->addSelect('oi', 'pref')
+            ->leftJoin('o.OrderItems', 'oi')
+            ->leftJoin('o.Pref', 'pref')
+            ->innerJoin('o.Shippings', 's');
+
+        // order_id_start
+        if (isset($OrderID)) {
+            $qb
+                ->andWhere('o.id = :order_id')
+                ->setParameter('order_id', $OrderID);
+        }
+
+
+        $qb->orderBy('o.update_date', 'DESC');
+        $qb->addorderBy('o.id', 'DESC');
+
+        return $this->queries->customize(QueryKey::ORDER_SEARCH_ADMIN, $qb, $OrderID);
     }
 }

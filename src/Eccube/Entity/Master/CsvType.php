@@ -52,5 +52,10 @@ if (!class_exists(CsvType::class, false)) {
          * @var integer
          */
         const CSV_TYPE_CATEGORY = 5;
+
+        /**
+         * @var integer
+         */
+        const CSV_TYPE_USER_ORDER = 6;
     }
 }
