@@ -114,6 +114,11 @@ class CsvExportService
     protected $paginator;
 
     /**
+     * @var csv_no
+     */
+    protected $csv_no;
+
+    /**
      * CsvExportService constructor.
      *
      * @param EntityManagerInterface $entityManager
@@ -255,6 +260,14 @@ class CsvExportService
     }
 
     /**
+     * @return csv_no
+     */
+    public function getCsvNo($csv_no)
+    {
+        $this->csv_no = $csv_no;
+    }
+
+    /**
      * ヘッダ行を出力する.
      * このメソッドを使う場合は, 事前にinitCsvType($CsvType)で初期化しておく必要がある.
      */
@@ -373,7 +386,13 @@ class CsvExportService
     public function fopen()
     {
         if (is_null($this->fp) || $this->closed) {
-            $this->fp = fopen('php://output', 'w');
+            if($this->csv_no == 1) {
+                $now = new \DateTime();
+                $filename = 'order_' . $now->format('YmdHis') . '.csv';
+                $this->fp = fopen('app/' .$filename, 'a');
+            } else {
+                $this->fp = fopen('php://output', 'w');
+            }
         }
     }
 
