@@ -27,6 +27,8 @@ use Eccube\Service\CsvExportService;
 use Eccube\Repository\OrderRepository;
 use Eccube\Service\CartService;
 use Eccube\Service\MailService;
+use Eccube\Exception\ShoppingException;
+use Eccube\Form\Type\Shopping\OrderType;
 
 class ShoppingController extends baseController
 {
@@ -187,5 +189,119 @@ class ShoppingController extends baseController
             'Order' => $Order,
             'hasNextCart' => $hasNextCart,
         ];
+    }
+
+
+    /**
+     * 注文処理を行う.
+     *
+     * 決済プラグインによる決済処理および注文の確定処理を行います.
+     *
+     * @Route("/shopping/checkout", name="shopping_checkout", methods={"POST"})
+     * @Template("Shopping/confirm.twig")
+     */
+    public function checkout(Request $request)
+    {
+        // ログイン状態のチェック.
+        if ($this->orderHelper->isLoginRequired()) {
+            log_info('[注文処理] 未ログインもしくはRememberMeログインのため, ログイン画面に遷移します.');
+
+            return $this->redirectToRoute('shopping_login');
+        }
+
+        // 受注の存在チェック
+        $preOrderId = $this->cartService->getPreOrderId();
+        $Order = $this->orderHelper->getPurchaseProcessingOrder($preOrderId);
+        if (!$Order) {
+            log_info('[注文処理] 購入処理中の受注が存在しません.', [$preOrderId]);
+
+            return $this->redirectToRoute('shopping_error');
+        }
+
+        // フォームの生成.
+        $form = $this->createForm(OrderType::class, $Order, [
+            // 確認画面から注文処理へ遷移する場合は, Orderエンティティで値を引き回すためフォーム項目の定義をスキップする.
+            'skip_add_form' => true,
+        ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            log_info('[注文処理] 注文処理を開始します.', [$Order->getId()]);
+
+            try {
+                /*
+                 * 集計処理
+                 */
+                log_info('[注文処理] 集計処理を開始します.', [$Order->getId()]);
+                $response = $this->executePurchaseFlow($Order);
+                $this->entityManager->flush();
+
+                if ($response) {
+                    return $response;
+                }
+
+                log_info('[注文処理] PaymentMethodを取得します.', [$Order->getPayment()->getMethodClass()]);
+                $paymentMethod = $this->createPaymentMethod($Order, $form);
+
+                /*
+                 * 決済実行(前処理)
+                 */
+                log_info('[注文処理] PaymentMethod::applyを実行します.');
+                if ($response = $this->executeApply($paymentMethod)) {
+                    return $response;
+                }
+
+                /*
+                 * 決済実行
+                 *
+                 * PaymentMethod::checkoutでは決済処理が行われ, 正常に処理出来た場合はPurchaseFlow::commitがコールされます.
+                 */
+                log_info('[注文処理] PaymentMethod::checkoutを実行します.');
+                if ($response = $this->executeCheckout($paymentMethod)) {
+                    return $response;
+                }
+
+                $this->entityManager->flush();
+
+                log_info('[注文処理] 注文処理が完了しました.', [$Order->getId()]);
+            } catch (ShoppingException $e) {
+                log_error('[注文処理] 購入エラーが発生しました.', [$e->getMessage()]);
+
+                $this->entityManager->rollback();
+
+                $this->addError($e->getMessage());
+
+                return $this->redirectToRoute('shopping_error');
+            } catch (\Exception $e) {
+                log_error('[注文処理] 予期しないエラーが発生しました.', [$e->getMessage()]);
+
+                $this->entityManager->rollback();
+
+                $this->addError('front.shopping.system_error');
+
+                return $this->redirectToRoute('shopping_error');
+            }
+
+            // カート削除
+            log_info('[注文処理] カートをクリアします.', [$Order->getId()]);
+            $this->cartService->clear();
+
+            // 受注IDをセッションにセット
+            $this->session->set(OrderHelper::SESSION_ORDER_ID, $Order->getId());
+
+            // メール送信
+            log_info('[注文処理] 注文メールの送信を行います.', [$Order->getId()]);
+            $this->mailService->sendOrderMail($Order);
+            $this->mailService->sendOrderCompleteMail($Order);
+            $this->entityManager->flush();
+
+            log_info('[注文処理] 注文処理が完了しました. 購入完了画面へ遷移します.', [$Order->getId()]);
+
+            return $this->redirectToRoute('shopping_complete');
+        }
+
+        log_info('[注文処理] フォームエラーのため, 購入エラー画面へ遷移します.', [$Order->getId()]);
+
+        return $this->redirectToRoute('shopping_error');
     }
 }

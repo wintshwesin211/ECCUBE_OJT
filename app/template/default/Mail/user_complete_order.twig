@@ -1,0 +1,115 @@
+{#
+This file is part of EC-CUBE
+
+Copyright(c) EC-CUBE CO.,LTD. All Rights Reserved.
+
+http://www.ec-cube.co.jp/
+
+For the full copyright and license information, please view the LICENSE
+file that was distributed with this source code.
+#}
+{% autoescape 'safe_textmail' %}
+{{ Order.name01 }} {{ Order.name02 }} 様
+
+Thank you for your order.Please make sure that the following order details are correct.
+
+************************************************
+Billed amount
+************************************************
+
+Order date and time：{{ Order.order_date|date_sec }}
+Order number：{{ Order.order_no }}
+Total payment：{{ Order.payment_total|price}}
+Payment method：{{ Order.payment_method }}
+{% if BaseInfo.isOptionPoint and Order.Customer is not null %}
+Points of use：{{ Order.usePoint|number_format }} pt
+Addition points：{{ Order.addPoint|number_format }} pt
+{% endif %}
+Inquiry：{{ Order.message }}
+
+
+************************************************
+　Ordered product details
+************************************************
+
+{% set isShowReducedTaxMess = false %}
+{% for OrderItem in Order.MergedProductOrderItems %}
+Product code：{{ OrderItem.product_code }}
+Product name：{{ OrderItem.product_name }}  {{ OrderItem.classcategory_name1 }}  {{ OrderItem.classcategory_name2 }} {% if is_reduced_tax_rate(OrderItem) %}※{% set isShowReducedTaxMess = true %}{% endif %}
+
+Unit price：{{ OrderItem.price_inctax|price }}
+Quantity：{{ OrderItem.quantity|number_format }}
+
+{% endfor %}
+{% if isShowReducedTaxMess %}※は軽減税率対象商品です。
+{% endif %}
+-------------------------------------------------
+Subtotal：{{ Order.subtotal|price }}
+Fee：{{ Order.charge|price }}
+Shipping fee：{{ Order.delivery_fee_total|price}}
+{% if Order.taxable_discount < 0 %}
+Total：{{ Order.taxable_discount|price }}
+{% endif %}
+-------------------------------------------------
+Total：{{ Order.taxable_total|price }}
+    {% for rate, total in Order.taxable_total_by_tax_rate %}
+    ({{ rate }} %Target：{{ total|price }})
+    {% endfor %}
+{% for item in Order.tax_free_discount_items %}
+-------------------------------------------------
+{{ item.product_name }}：{{ item.total_price|price }}
+{% endfor %}
+============================================
+Total payment：{{ Order.payment_total|price }}
+
+************************************************
+　Orderer information
+************************************************
+Name：{{ Order.name01 }} {{ Order.name02 }} 様
+Name(kana)：{{ Order.kana01 }} {{ Order.kana02 }} 様
+{% if Order.company_name %}
+Company name：{{ Order.company_name }}
+{% endif %}
+Zip code：〒{{ Order.postal_code }}
+Address：{{ Order.Pref.name }}{{ Order.addr01 }}{{ Order.addr02 }}
+Phone number：{{ Order.phone_number }}
+Email address：{{ Order.email }}
+
+************************************************
+　Delivery information
+************************************************
+
+{%  for Shipping in Order.Shippings %}
+◎Delivery address{% if Order.multiple %}{{ loop.index }}{% endif %}
+
+Name：{{ Shipping.name01 }} {{ Shipping.name02 }} 様
+Name(kana)：{{ Shipping.kana01 }} {{ Shipping.kana02 }} 様
+{% if Shipping.company_name %}
+Company name：{{ Shipping.company_name }}
+{% endif %}
+zip code：〒{{ Shipping.postal_code }}
+Address：{{ Shipping.Pref.name }}{{ Shipping.addr01 }}{{ Shipping.addr02 }}
+Phone number：{{ Shipping.phone_number }}
+
+Shipping method：{{ Shipping.shipping_delivery_name }}
+Delivery date：{{ Shipping.shipping_delivery_date is empty ? '指定なし' : Shipping.shipping_delivery_date|date_day }}
+Delivery time：{{ Shipping.shipping_delivery_time|default('指定なし') }}
+
+{%  for OrderItem in Shipping.productOrderItems %}
+Product code：{{ OrderItem.product_code }}
+Product name：{{ OrderItem.product_name }}  {{ OrderItem.classcategory_name1 }}  {{ OrderItem.classcategory_name2 }}
+Quantity：{{ OrderItem.quantity|number_format }}
+
+{% endfor %}
+{% endfor %}
+
+{% if Order.complete_mail_message is not empty %}
+{{ Order.complete_mail_message }}
+{% endif %}
+
+============================================
+
+This message is for customer notification only, so
+If you send us a question as a reply to this message, we will not be able to answer it.
+note that.
+{% endautoescape %}
