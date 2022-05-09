@@ -36,7 +36,7 @@ class ShoppingController extends baseController
      * @var CsvExportService
      */
     protected $csvExportService;
-    
+
     /**
      * @var CartService
      */
@@ -120,7 +120,7 @@ class ShoppingController extends baseController
         $em->getConfiguration()->setSQLLogger(null);
 
         $response = new StreamedResponse();
-        $csv_no = 1 ;
+        $csv_no = 1;
         $this->csvExportService->getCsvNo($csv_no);
 
         $response->setCallback(function () use ($request, $order_no) {
@@ -133,7 +133,7 @@ class ShoppingController extends baseController
             // 受注データ検索用のクエリビルダを取得.
             $qb = $this->csvExportService
                 ->getUserOrder($order_no);
-            
+
 
             // データ行の出力.
             $this->csvExportService->setExportQueryBuilder($qb);
@@ -176,7 +176,7 @@ class ShoppingController extends baseController
 
                     //$row[] = number_format(memory_get_usage(true));
                     // 出力.
-                     $csvService->fputcsv($ExportCsvRow->getRow());
+                    $csvService->fputcsv($ExportCsvRow->getRow());
                 }
             });
         });
