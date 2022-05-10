@@ -3,25 +3,56 @@
 namespace Customize\Controller\MyPage;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Eccube\Event\EccubeEvents;
-use Eccube\Event\EventArgs;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Eccube\Controller\Mypage\MypageController as baseController;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Eccube\Entity\Master\CsvType;
 use Eccube\Entity\ExportCsvRow;
 use Eccube\Service\CsvExportService;
+use Eccube\Controller\AbstractController;
+use Eccube\Entity\BaseInfo;
+use Eccube\Entity\Customer;
+use Eccube\Entity\Order;
+use Eccube\Entity\Product;
+use Eccube\Event\EccubeEvents;
+use Eccube\Event\EventArgs;
+use Eccube\Exception\CartException;
+use Eccube\Form\Type\Front\CustomerLoginType;
+use Eccube\Repository\BaseInfoRepository;
+use Eccube\Repository\CustomerFavoriteProductRepository;
 use Eccube\Repository\OrderRepository;
+use Eccube\Repository\ProductRepository;
+use Eccube\Service\CartService;
+use Eccube\Service\PurchaseFlow\PurchaseContext;
+use Eccube\Service\PurchaseFlow\PurchaseFlow;
+use Knp\Component\Pager\PaginatorInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class MypageController extends baseController
 {
     /**
-     * @var CsvExportService
+     * @var ProductRepository
      */
-    protected $csvExportService;
+    protected $productRepository;
+
+    /**
+     * @var CustomerFavoriteProductRepository
+     */
+    protected $customerFavoriteProductRepository;
+
+    /**
+     * @var BaseInfo
+     */
+    protected $BaseInfo;
+
+    /**
+     * @var CartService
+     */
+    protected $cartService;
 
     /**
      * @var OrderRepository
@@ -29,17 +60,31 @@ class MypageController extends baseController
     protected $orderRepository;
 
     /**
+     * @var PurchaseFlow
+     */
+    protected $purchaseFlow;
+
+    /**
      * MypageController constructor.
      *
      * @param OrderRepository $orderRepository
-     * @param CsvExportService $csvExportService
+     * @param CustomerFavoriteProductRepository $customerFavoriteProductRepository
+     * @param CartService $cartService
+     * @param BaseInfoRepository $baseInfoRepository
+     * @param PurchaseFlow $purchaseFlow
      */
     public function __construct(
         OrderRepository $orderRepository,
-        CsvExportService $csvExportService
+        CustomerFavoriteProductRepository $customerFavoriteProductRepository,
+        CartService $cartService,
+        BaseInfoRepository $baseInfoRepository,
+        PurchaseFlow $purchaseFlow
     ) {
         $this->orderRepository = $orderRepository;
-        $this->csvExportService = $csvExportService;
+        $this->customerFavoriteProductRepository = $customerFavoriteProductRepository;
+        $this->BaseInfo = $baseInfoRepository->get();
+        $this->cartService = $cartService;
+        $this->purchaseFlow = $purchaseFlow;
     }
 
     /**
